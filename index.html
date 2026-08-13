@@ -204,15 +204,35 @@ async function finishQuiz(){
 }
 
 async function sendScoreToSupabase(score) {
+    // Mengubah hasil jawaban menjadi array huruf A, B, C, D (contoh: ["A", "C", "D", "B", ...])
+    const hurufJawaban = ['A', 'B', 'C', 'D'];
+    const arrayJawaban = state.quizResults.map(item => hurufJawaban[item.answer] || '-');
+
     const { error } = await supabaseClient
         .from('nilai_siswa_6sd')
         .insert([
             {
                 nama: studentData.nama,
                 kelas: studentData.kelas,
-                skor: score
+                skor: score,
+                jawaban: arrayJawaban // <-- Data array jawaban dikirim ke Supabase
             }
         ]);
+
+    const statusEl = document.getElementById('saveStatus');
+    if (error) {
+        console.error("Gagal mengirim data:", error.message);
+        if (statusEl) {
+            statusEl.innerText = "⚠️ Gagal menyimpan ke Supabase: " + error.message;
+            statusEl.style.color = "#dc2626";
+        }
+    } else {
+        if (statusEl) {
+            statusEl.innerText = "✅ Nilai dan rincian jawaban berhasil tersimpan di database!";
+            statusEl.style.color = "#16a34a";
+        }
+    }
+}
 
     const statusEl = document.getElementById('saveStatus');
     if (error) {
