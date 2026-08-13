@@ -166,7 +166,24 @@ function renderQ(){
  document.getElementById("qCounter").textContent=`Soal ${state.q+1}/20`;document.getElementById("qProgress").style.width=((state.q)/20*100)+"%";
  document.getElementById("quizArea").innerHTML=`<h3>${q[0]}</h3>${q[1].map((x,i)=>`<button class="option ${old&&old.answer===i?"selected":""}" onclick="ans(${i})">${String.fromCharCode(65+i)}. ${x}</button>`).join("")}<div id="qfb"></div>`;
 }
-function ans(i){const q=qs[state.q],o={question_id:state.q+1,answer:i,correct:i===q[2],time_ms:Date.now()-state.qStart,timestamp:new Date().toISOString()};const idx=state.quizResults.findIndex(x=>x.question_id===state.q+1);if(idx>=0)state.quizResults[idx]=o;else state.quizResults.push(o);document.querySelectorAll("#quizArea .option").forEach((b,j)=>b.classList.toggle("selected",j===i));document.getElementById("qfb").innerHTML=`<div class="feedback ${o.correct?"ok":"bad"}">${o.correct?"✅ Benar":"Jawaban dicatat"}</div>`}
+function ans(i){
+ const existing = state.quizResults.find(x=>x.question_id===state.q+1);
+ if(existing) return; // Mencegah menjawab ulang jika sudah pernah diisi
+
+ const q=qs[state.q];
+ const isCorrect = (i === q[2]);
+ const o={question_id:state.q+1, answer:i, correct:isCorrect, time_ms:Date.now()-state.qStart, timestamp:new Date().toISOString()};
+ 
+ state.quizResults.push(o);
+
+ // Kunci semua tombol jawaban agar tidak bisa diklik lagi
+ document.querySelectorAll("#quizArea .option").forEach((b,j)=>{
+    b.style.pointerEvents = "none";
+    if(j===i) b.classList.add("selected");
+ });
+
+ document.getElementById("qfb").innerHTML=`<div class="feedback ${isCorrect?"ok":"bad"}">${isCorrect?"✅ Benar":"Jawaban dicatat"}</div>`;
+}
 
 // ==========================================
 // 4. PENYELESAIAN UJIAN & KIRIM SUPABASE
