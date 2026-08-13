@@ -185,31 +185,7 @@ function ans(i){
  document.getElementById("qfb").innerHTML=`<div class="feedback ${isCorrect?"ok":"bad"}">${isCorrect?"✅ Benar":"Jawaban dicatat"}</div>`;
 }
 
-// ==========================================
-// 4. PENYELESAIAN UJIAN & KIRIM SUPABASE
-// ==========================================
-async function finishQuiz(){
-    const correctCount = state.quizResults.filter(x=>x.correct).length;
-    const finalScore = correctCount * 5; // Total skor 100 (20 soal x 5)
-
-    document.getElementById("qProgress").style.width="100%";
-    
-    // Sembunyikan navigasi di bawah jika ada
-    const appFooter = document.getElementById("appFooter");
-    if (appFooter) appFooter.style.display = "none";
-
-    document.getElementById("quizArea").innerHTML=`
-        <div class="score">${finalScore}/100</div>
-        <p style="text-align:center"><b>Ujian Selesai! Terima kasih, ${studentData.nama}.</b></p>
-        <p id="saveStatus" style="text-align:center;font-weight:bold;margin:15px 0;color:#667085;">Sedang menyimpan nilai ke database...</p>
-        <button class="btn" onclick="downloadJSON()">📦 Simpan Cadangan (JSON)</button>
-    `;
-
-    await sendScoreToSupabase(finalScore);
-}
-
 async function sendScoreToSupabase(score) {
-    // Mengubah hasil jawaban menjadi array huruf A, B, C, D (contoh: ["A", "C", "D", "B", ...])
     const hurufJawaban = ['A', 'B', 'C', 'D'];
     const arrayJawaban = state.quizResults.map(item => hurufJawaban[item.answer] || '-');
 
@@ -220,7 +196,7 @@ async function sendScoreToSupabase(score) {
                 nama: studentData.nama,
                 kelas: studentData.kelas,
                 skor: score,
-                jawaban: arrayJawaban // Data array jawaban dikirim ke Supabase
+                jawaban: arrayJawaban
             }
         ]);
 
