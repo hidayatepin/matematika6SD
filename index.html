@@ -193,6 +193,11 @@ async function finishQuiz(){
     const finalScore = correctCount * 5; // Total skor 100 (20 soal x 5)
 
     document.getElementById("qProgress").style.width="100%";
+    
+    // Sembunyikan navigasi di bawah jika ada
+    const appFooter = document.getElementById("appFooter");
+    if (appFooter) appFooter.style.display = "none";
+
     document.getElementById("quizArea").innerHTML=`
         <div class="score">${finalScore}/100</div>
         <p style="text-align:center"><b>Ujian Selesai! Terima kasih, ${studentData.nama}.</b></p>
@@ -215,7 +220,7 @@ async function sendScoreToSupabase(score) {
                 nama: studentData.nama,
                 kelas: studentData.kelas,
                 skor: score,
-                jawaban: arrayJawaban // <-- Data array jawaban dikirim ke Supabase
+                jawaban: arrayJawaban // Data array jawaban dikirim ke Supabase
             }
         ]);
 
@@ -234,23 +239,20 @@ async function sendScoreToSupabase(score) {
     }
 }
 
-    const statusEl = document.getElementById('saveStatus');
-    if (error) {
-        console.error("Gagal mengirim data:", error.message);
-        if (statusEl) {
-            statusEl.innerText = "⚠️ Gagal menyimpan ke Supabase: " + error.message;
-            statusEl.style.color = "#dc2626";
-        }
-    } else {
-        if (statusEl) {
-            statusEl.innerText = "✅ Nilai berhasil disimpan ke database Supabase!";
-            statusEl.style.color = "#16a34a";
-        }
-    }
+function downloadJSON(){
+    const data={app:"ERAG Pecahan Kelas 6",nama:studentData.nama,kelas:studentData.kelas,started_at:new Date(state.started).toISOString(),games:state.gameResults,quiz:state.quizResults};
+    const b=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");
+    a.href=URL.createObjectURL(b);
+    a.download=`hasil-${studentData.nama}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
 }
 
-function downloadJSON(){const data={app:"ERAG Pecahan Kelas 6",nama:studentData.nama,kelas:studentData.kelas,started_at:new Date(state.started).toISOString(),games:state.gameResults,quiz:state.quizResults};const b=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`hasil-${studentData.nama}.json`;a.click();URL.revokeObjectURL(a.href)}
-setInterval(()=>{const s=Math.floor((Date.now()-state.started)/1000);document.getElementById("qClock").textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")},1000);
+setInterval(()=>{
+    const s=Math.floor((Date.now()-state.started)/1000);
+    document.getElementById("qClock").textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+},1000);
+
 renderQ();
 </script>
 </body>
