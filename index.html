@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2563eb">
+<title>Petualangan Pecahan Kelas 6</title>
+<!-- 1. SDK SUPABASE JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:#172033;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.app{max-width:720px;margin:auto;min-height:100vh;padding-bottom:70px}header{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid #e5e7eb}
+.head{padding:13px 16px}.title{font-size:20px;font-weight:800}.sub{font-size:12px;color:#667085}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px 12px}.tab{border:0;border-radius:12px;padding:10px 4px;font-weight:800;background:#eef2ff;color:#334155}.tab.active{background:#2563eb;color:white}
+main{padding:14px}.panel{display:none}.panel.active{display:block}.card{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:17px;margin-bottom:13px;box-shadow:0 7px 24px rgba(15,23,42,.07)}
+.hero{background:#eff6ff}h2{margin:0 0 8px;font-size:22px}h3{margin:0 0 9px}p{line-height:1.55}.muted{color:#667085}.badge{display:inline-block;background:#dbeafe;color:#1d4ed8;border-radius:99px;padding:5px 9px;font-size:11px;font-weight:800}
+.math{text-align:center;font-size:26px;font-weight:900;background:#f8fafc;border-radius:13px;padding:12px;margin:10px 0}.flow{display:flex;gap:7px;align-items:center;overflow:auto}.box{min-width:105px;padding:11px;text-align:center;background:#eff6ff;border:2px solid #bfdbfe;border-radius:12px;font-weight:750}.arrow{font-weight:900;color:#2563eb}
+.half{display:flex;max-width:350px;height:48px;margin:14px auto}.half span{flex:1;background:#bfdbfe;border:3px solid #2563eb}.half span+span{border-left:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.btn,.option{border-radius:13px;padding:12px;font-weight:800;cursor:pointer}.btn{border:0;background:#2563eb;color:#fff;min-height:44px;width:100%}.btn.secondary{background:#e2e8f0;color:#172033}.option{width:100%;text-align:left;background:#fff;border:2px solid #e5e7eb;margin:5px 0}.option.selected{border-color:#2563eb;background:#eff6ff}.feedback{padding:11px;border-radius:12px;margin-top:9px;font-weight:750}.ok{background:#dcfce7;color:#166534}.bad{background:#fee2e2;color:#991b1b}
+.game-stage{text-align:center;min-height:220px;display:flex;flex-direction:column;justify-content:center;align-items:center}.items{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:14px}.item{width:48px;height:48px;border-radius:12px;border:2px solid #60a5fa;background:#dbeafe;color:#1d4ed8;font-weight:900}.item.used{background:#dcfce7;border-color:#4ade80;color:#166534}
+.progress{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;background:#2563eb;width:0}.hidden{display:none!important}.score{font-size:44px;font-weight:900;text-align:center}
+footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e5e7eb;z-index:6}.foot{max-width:720px;margin:auto;padding:8px 12px;display:flex;justify-content:space-between;gap:8px}
+
+/* STYLING MODAL IDENTITAS SISWA */
+#identity-modal{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(15,23,42,0.6);backdrop-filter:blur(4px);z-index:100;display:flex;justify-content:center;align-items:center;padding:16px}
+.identity-card{background:#fff;border-radius:20px;padding:24px;width:100%;max-width:400px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1)}
+.identity-card input{width:100%;padding:12px 14px;border:2px solid #e5e7eb;border-radius:12px;margin-bottom:12px;font-size:15px;outline:none}
+.identity-card input:focus{border-color:#2563eb}
+
+@media(max-width:430px){.grid{grid-template-columns:1fr}main{padding:11px}}
+</style>
+</head>
+<body>
+
+<!-- MODAL POPUP DATA SISWA -->
+<div id="identity-modal">
+  <div class="identity-card">
+    <h2 style="text-align:center;color:#2563eb;">👋 Selamat Datang!</h2>
+    <p style="text-align:center;color:#667085;font-size:14px;margin-bottom:20px;">Silakan isi data diri sebelum mulai belajar.</p>
+    <input type="text" id="namaSiswa" placeholder="Masukkan Nama Lengkap" required />
+    <input type="text" id="kelasSiswa" placeholder="Masukkan Kelas (contoh: 6A)" required />
+    <button class="btn" onclick="simpanIdentitas()">Mulai Belajar</button>
+  </div>
+</div>
+
+<div class="app">
+<header><div class="head"><div class="title">🧩 Petualangan Pecahan</div><div class="sub">Kelas 6 SD • <span id="user-display">Siswa</span></div></div>
+<nav class="tabs"><button class="tab active" data-tab="materi">📚 Materi</button><button class="tab" data-tab="game">🎮 4 Game</button><button class="tab" data-tab="ujian">📝 Ujian</button></nav></header>
+
+<main>
+<section id="materi" class="panel active">
+<div class="card hero"><span class="badge">MISI UTAMA</span><h2>Memahami Pembagian Pecahan</h2><p>Kita belajar menjawab: <b>“Ada berapa banyak bagian seperti ini di dalam jumlah yang kita punya?”</b></p></div>
+<div class="card"><h3>1. Apa arti pembagian?</h3><p>Ada <b>2 meter</b> pita. Setiap potongan panjangnya <b>½ meter</b>.</p><div class="math">2 ÷ ½ = ?</div><div class="flow"><div class="box">2 meter</div><div class="arrow">→</div><div class="box">kelompok ½ meter</div><div class="arrow">→</div><div class="box">berapa kelompok?</div></div><div class="half"><span></span><span></span></div><p style="text-align:center"><b>1 meter = 2 bagian ½</b><br><b>2 meter = 4 bagian ½</b></p></div>
+<div class="card"><h3>2. Mengapa 3 ÷ ½ = 6?</h3><p>Setiap satu utuh berisi <b>2 bagian ½</b>. Jadi 3 utuh berisi 6 bagian ½.</p><div class="math">3 ÷ ½ = 6</div><p>Pembagian pecahan dapat dipahami sebagai <b>mencari banyak kelompok pecahan</b>.</p></div>
+<div class="card"><h3>3. Dari cerita → matematika</h3><p><b>Contoh:</b> Ibu punya 3 meter pita. Setiap potongan ½ meter. Berapa potongan?</p><ol><li>Diketahui: 3 meter.</li><li>Ukuran setiap bagian: ½ meter.</li><li>Ditanyakan: banyak potongan.</li><li>Karena mencari banyak kelompok, gunakan pembagian.</li></ol><div class="math">3 ÷ ½</div></div>
+<div class="card"><h3>4. Cara cepat</h3><p>Setelah memahami maknanya, gunakan aturan pembagian pecahan:</p><div class="math">a ÷ b/c = a × c/b</div><div class="math">3 ÷ ½ = 3 × 2 = 6</div><p class="muted">Pahami maknanya dahulu. Rumus digunakan setelahnya.</p></div>
+<div class="card"><h3>5. Tiga pertanyaan saat membaca soal cerita</h3><div class="grid"><div class="box">Apa yang tersedia?</div><div class="box">Setiap bagian berapa?</div><div class="box">Apa yang ditanyakan?</div><div class="box">Operasi apa yang cocok?</div></div></div>
+</section>
+
+<section id="game" class="panel">
+<div class="card hero"><span class="badge">4 GAME PEMAHAMAN</span><h2>Belajar sambil bermain</h2><p>Setiap game melatih cara berpikir yang berbeda.</p></div>
+<div id="gameMenu" class="card"><div class="grid">
+<button class="btn" onclick="startGame(1)">🎯 Game 1<br><small>Kelompok Pecahan</small></button>
+<button class="btn" onclick="startGame(2)">✂️ Game 2<br><small>Potong & Kelompokkan</small></button>
+<button class="btn" onclick="startGame(3)">🧠 Game 3<br><small>Cerita → Operasi</small></button>
+<button class="btn" onclick="startGame(4)">🔎 Game 4<br><small>Detektif Kesalahan</small></button>
+</div></div>
+<div id="gameArea" class="card hidden"></div>
+</section>
+
+<section id="ujian" class="panel">
+<div class="card hero"><span class="badge">20 SOAL</span><h2>Tantangan Pecahan</h2><p>Kerjakan sendiri. Hasil ujian akan langsung tersimpan otomatis ke database Supabase.</p></div>
+<div class="card"><div style="display:flex;justify-content:space-between"><b id="qCounter">Soal 1/20</b><b id="qClock">00:00</b></div><div class="progress"><i id="qProgress"></i></div><div id="quizArea"></div></div>
+</section>
+</main>
+<footer><div class="foot"><button class="btn secondary" onclick="back()">← Kembali</button><button class="btn" onclick="forward()">Lanjut →</button></div></footer>
+</div>
+
+<script>
+// ==========================================
+// 1. KONFIGURASI SUPABASE
+// ==========================================
+const supabaseUrl = 'https://ipxpbyajakjleqfcnzw.supabase.co';
+const supabaseKey = 'PASTE_ANON_KEY_KAMU_DI_SINI'; // Ganti dengan anon key Supabase Anda
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+// ==========================================
+// 2. DATA IDENTITAS SISWA
+// ==========================================
+let studentData = { nama: "", kelas: "" };
+
+function simpanIdentitas() {
+    const nama = document.getElementById("namaSiswa").value.trim();
+    const kelas = document.getElementById("kelasSiswa").value.trim();
+
+    if (!nama || !kelas) {
+        alert("Harap isi Nama dan Kelas terlebih dahulu!");
+        return;
+    }
+
+    studentData.nama = nama;
+    studentData.kelas = kelas;
+
+    document.getElementById("user-display").textContent = `${studentData.nama} (${studentData.kelas})`;
+    document.getElementById("identity-modal").style.display = "none";
+}
+
+// ==========================================
+// 3. LOGIKA APLIKASI & SOAL UJIAN
+// ==========================================
+const state={tab:"materi",gameResults:[],quizResults:[],q:0,started:Date.now(),qStart:Date.now(),game:{}};
+const qs=[
+["Sebuah kue dibagi 8 sama besar. Ani memakan 3 bagian. Pecahan bagian yang dimakan adalah ...",["3/5","3/8","5/8","8/3"],1],
+["24 pensil. Sebanyak 3/8 bagian merah. Banyak pensil merah adalah ...",["6","8","9","12"],2],
+["36 liter air. 2/3 digunakan. Sisa air adalah ...",["12 liter","18 liter","24 liter","30 liter"],0],
+["3 meter pita dipotong masing-masing 1/2 meter. Banyak potongan adalah ...",["3","4","5","6"],3],
+["6 kg beras, tiap kantong 3/4 kg. Banyak kantong penuh adalah ...",["4","6","8","9"],2],
+["5/6 ÷ 5 = ...",["1/6","5/30","5/11","25/6"],0],
+["2/3 ÷ 2 = ...",["2/3","2/5","1/3","4/3"],2],
+["Manakah yang paling besar?",["4,05","4,5","4,15","4,09"],1],
+["0,75 sama dengan ...",["3/4","7/5","75/10","1/3"],0],
+["2 1/2 meter dikurangi 3/4 meter = ...",["1 1/4","1 3/4","2 1/4","3 1/4"],1],
+["2 pizza. Tiap orang mendapat 1/2 pizza. Banyak orang = ...",["2","3","4","5"],2],
+["4 ÷ 1/2 = ...",["2","4","6","8"],3],
+["3 ÷ 3/4 = ...",["3","4","6","9"],1],
+["2 ÷ 1/4 = ...",["4","6","8","10"],2],
+["1 1/2 ÷ 1/2 = ...",["2","3","4","6"],1],
+["5 meter tali, tiap bagian 1/2 meter. Operasi yang tepat ...",["5+1/2","5-1/2","5×1/2","5÷1/2"],3],
+["3/4 kg gula dibagi rata kepada 3 anak. Model yang tepat ...",["3/4+3","3/4-3","3/4×3","3/4÷3"],3],
+["Pernyataan yang benar adalah ...",["2÷1/2=1","2÷1/2=2","2÷1/2=4","2÷1/2=1/2"],2],
+["6/5 ÷ 2 = ...",["3/5","6/7","12/5","3/10"],0],
+["2 1/4 meter pita dibagi potongan 3/4 meter. Banyak potongan penuh ...",["2","3","4","5"],1]
+];
+
+function show(id){
+    if(!studentData.nama) {
+        document.getElementById("identity-modal").style.display = "flex";
+        return;
+    }
+    state.tab=id;document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x.dataset.tab===id));document.querySelectorAll(".panel").forEach(x=>x.classList.toggle("active",x.id===id));window.scrollTo({top:0,behavior:"smooth"});if(id==="ujian")renderQ();
+}
+document.querySelectorAll(".tab").forEach(x=>x.onclick=()=>show(x.dataset.tab));
+function forward(){if(state.tab==="ujian"){if(state.q<19){state.q++;state.qStart=Date.now();renderQ()}else finishQuiz()}else show(state.tab==="materi"?"game":"ujian")}
+function back(){if(state.tab==="ujian"&&state.q>0){state.q--;renderQ()}else show(state.tab==="ujian"?"game":"materi")}
+
+function startGame(n){
+ state.game={n};document.getElementById("gameMenu").classList.add("hidden");const a=document.getElementById("gameArea");a.classList.remove("hidden");
+ const titles=["","🎯 Game 1 — Berapa Banyak Kelompok?","✂️ Game 2 — Potong & Kelompokkan","🧠 Game 3 — Cerita → Operasi","🔎 Game 4 — Detektif Kesalahan"];
+ let body="";
+ if(n===1)body=`<div class="game-stage"><h3>3 utuh berisi berapa bagian ½?</h3><p>Pilih 6 bagian ½ yang ada.</p><div class="items">${"<button class='item' onclick='pick(this)'>½</button>".repeat(6)}</div><div id="gm">0/6 dipilih</div><button class="btn" onclick="checkGame()">Periksa</button></div>`;
+ if(n===2)body=`<div class="game-stage"><h3>3 meter, setiap potongan ¾ meter.</h3><p>Berapa potongan penuh?</p>${["3","4","5","6"].map((x,i)=>`<button class="option" onclick="gsel(this,${i})">${x} potongan</button>`).join("")}<div id="gm"></div><button class="btn" onclick="checkGame()">Periksa</button></div>`;
+ if(n===3)body=`<div class="game-stage"><h3>Modelkan cerita</h3><p>Ibu punya 4 meter pita. Tiap kado membutuhkan ½ meter.</p>${["4 + ½","4 − ½","4 × ½","4 ÷ ½"].map((x,i)=>`<button class="option" onclick="gsel(this,${i})">${x}</button>`).join("")}<div id="gm"></div><button class="btn" onclick="checkGame()">Periksa</button></div>`;
+ if(n===4)body=`<div class="game-stage"><h3>Andi berkata: 2 ÷ ½ = 1.</h3><p>Apakah pernyataannya benar?</p><button class="option" onclick="gsel(this,0)">Benar</button><button class="option" onclick="gsel(this,1)">Salah</button><div id="gm"></div><button class="btn" onclick="checkGame()">Periksa</button></div>`;
+ a.innerHTML=`<h3>${titles[n]}</h3>${body}`;
+}
+function pick(el){el.classList.toggle("used");state.game.count=document.querySelectorAll(".item.used").length;document.getElementById("gm").textContent=state.game.count+"/6 dipilih"}
+function gsel(el,v){document.querySelectorAll("#gameArea .option").forEach(x=>x.classList.remove("selected"));el.classList.add("selected");state.game.answer=v}
+function checkGame(){
+ let ok=(state.game.n===1?state.game.count===6:state.game.n===2?state.game.answer===1:state.game.n===3?state.game.answer===3:state.game.answer===1);
+ state.gameResults.push({game_id:state.game.n,answer:state.game.answer??state.game.count,correct:ok,timestamp:new Date().toISOString()});
+ const gm=document.getElementById("gm");gm.className="feedback "+(ok?"ok":"bad");gm.textContent=ok?"✅ Benar!":"❌ Belum tepat. Ingat kembali makna pembagian.";document.querySelector("#gameArea .btn:last-child").disabled=true;
+}
+function renderQ(){
+ const q=qs[state.q],old=state.quizResults.find(x=>x.question_id===state.q+1);
+ document.getElementById("qCounter").textContent=`Soal ${state.q+1}/20`;document.getElementById("qProgress").style.width=((state.q)/20*100)+"%";
+ document.getElementById("quizArea").innerHTML=`<h3>${q[0]}</h3>${q[1].map((x,i)=>`<button class="option ${old&&old.answer===i?"selected":""}" onclick="ans(${i})">${String.fromCharCode(65+i)}. ${x}</button>`).join("")}<div id="qfb"></div>`;
+}
+function ans(i){const q=qs[state.q],o={question_id:state.q+1,answer:i,correct:i===q[2],time_ms:Date.now()-state.qStart,timestamp:new Date().toISOString()};const idx=state.quizResults.findIndex(x=>x.question_id===state.q+1);if(idx>=0)state.quizResults[idx]=o;else state.quizResults.push(o);document.querySelectorAll("#quizArea .option").forEach((b,j)=>b.classList.toggle("selected",j===i));document.getElementById("qfb").innerHTML=`<div class="feedback ${o.correct?"ok":"bad"}">${o.correct?"✅ Benar":"Jawaban dicatat"}</div>`}
+
+// ==========================================
+// 4. PENYELESAIAN UJIAN & KIRIM SUPABASE
+// ==========================================
+async function finishQuiz(){
+    const correctCount = state.quizResults.filter(x=>x.correct).length;
+    const finalScore = correctCount * 5; // Total skor 100 (20 soal x 5)
+
+    document.getElementById("qProgress").style.width="100%";
+    document.getElementById("quizArea").innerHTML=`
+        <div class="score">${finalScore}/100</div>
+        <p style="text-align:center"><b>Ujian Selesai! Terima kasih, ${studentData.nama}.</b></p>
+        <p id="saveStatus" style="text-align:center;font-weight:bold;margin:15px 0;color:#667085;">Sedang menyimpan nilai ke database...</p>
+        <button class="btn" onclick="downloadJSON()">📦 Simpan Cadangan (JSON)</button>
+    `;
+
+    await sendScoreToSupabase(finalScore);
+}
+
+async function sendScoreToSupabase(score) {
+    const { error } = await supabaseClient
+        .from('nilai_siswa')
+        .insert([
+            {
+                nama: studentData.nama,
+                kelas: studentData.kelas,
+                skor: score
+            }
+        ]);
+
+    const statusEl = document.getElementById('saveStatus');
+    if (error) {
+        console.error("Gagal mengirim data:", error.message);
+        if (statusEl) {
+            statusEl.innerText = "⚠️ Gagal menyimpan ke Supabase: " + error.message;
+            statusEl.style.color = "#dc2626";
+        }
+    } else {
+        if (statusEl) {
+            statusEl.innerText = "✅ Nilai berhasil disimpan ke database Supabase!";
+            statusEl.style.color = "#16a34a";
+        }
+    }
+}
+
+function downloadJSON(){const data={app:"ERAG Pecahan Kelas 6",nama:studentData.nama,kelas:studentData.kelas,started_at:new Date(state.started).toISOString(),games:state.gameResults,quiz:state.quizResults};const b=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`hasil-${studentData.nama}.json`;a.click();URL.revokeObjectURL(a.href)}
+setInterval(()=>{const s=Math.floor((Date.now()-state.started)/1000);document.getElementById("qClock").textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")},1000);
+renderQ();
+</script>
+</body>
+</html>
