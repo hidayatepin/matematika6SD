@@ -188,7 +188,7 @@ async function finishQuiz(){
 
 async function sendScoreToSupabase(score) {
     const { error } = await supabaseClient
-        .from('nilai_siswa')
+        .from('nilai_siswa_6sd')
         .insert([
             {
                 nama: studentData.nama,
